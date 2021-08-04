@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "387585086135",
+    "project_id": "fitmanny-612a8",
+    "storage_bucket": "fitmanny-612a8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387585086135:android:06875adc1dc79cf8a3b332",
+        "android_client_info": {
+          "package_name": "com.haccet.fit_manny"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "387585086135-tuj7tv7o0gjogt3oncmq6ps0cci9314l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.haccet.fit_manny",
+            "certificate_hash": "ffd0e170f4427dc2e21159921ffc6fe3946ad46c"
+          }
+        },
+        {
+          "client_id": "387585086135-0igbcgplhkoc3goa3nlhdkmstnukcirm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADBz3GVUP7-zl8GGssza0WtL8vR94aWJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "387585086135-0igbcgplhkoc3goa3nlhdkmstnukcirm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "387585086135-mpnbvqi82s8sjui283umn7sqjviudpan.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fitmanuk.fitmanny"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

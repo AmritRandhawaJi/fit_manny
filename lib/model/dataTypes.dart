@@ -1,0 +1,11 @@
+enum Database{
+  AGE,
+  NAME,
+  EMAIL,
+  PHONE,
+  GENDER,
+  REGISTRATION,
+  PROFILECOMPLETE,
+  GOAL,
+  LASTLOGIN
+}
