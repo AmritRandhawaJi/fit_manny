@@ -163,7 +163,7 @@ class _GoalsFormState extends State<GoalsForm> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Indicator(),
+                          Indicator.show(context),
 
                           Text("Creating profile")
                         ],

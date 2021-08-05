@@ -43,7 +43,7 @@ class _RegisterFormState extends State<RegisterForm> {
     await FirebaseFirestore.instance
         .collection("users")
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set({"LASTLOGIN": DateTime.now(), "PROFILECOMPLETE": false},
+        .set({"ACCOUNT": true, "PROFILECOMPLETE": false},
             SetOptions(merge: true)).then((value) => {});
   }
 
@@ -92,6 +92,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     child: Form(
                       key: _emailKey,
                       child: TextFormField(
+                        keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return "Enter your email";
@@ -215,7 +216,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     color: Colors.black,
                   ),
                   Container(
-                    child: loading ? Indicator() : null,
+                    child: loading ? Indicator.show(context) : null,
                   ),
                 ])));
   }

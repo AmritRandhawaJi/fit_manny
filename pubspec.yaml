@@ -23,7 +23,7 @@ dependencies:
   connectivity: ^3.0.3
   country_code_picker: ^2.0.1
   pin_code_fields: ^7.1.0
-
+  google_sign_in: ^5.0.7
 
 
 

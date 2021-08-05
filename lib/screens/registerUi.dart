@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:fit_manny/assets/my_flutter_app_icons.dart';
-import 'package:fit_manny/screens/loginScreen.dart';
+import 'package:fit_manny/model/firebase.dart';
 import 'package:fit_manny/screens/phoneOTP.dart';
 import 'package:fit_manny/widgets/internetAlert.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,6 +13,7 @@ class RegisterUi extends StatefulWidget {
 }
 
 class _RegisterUiState extends State<RegisterUi> {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -72,20 +73,13 @@ class _RegisterUiState extends State<RegisterUi> {
               children: [
                 CupertinoButton(
                   color: Colors.black,
-                  onPressed: () {
-                    if (Platform.isIOS) {
-                      Navigator.of(context).pushReplacement(CupertinoPageRoute(
-                        builder: (context) => LoginScreen(),
-                      ));
-                    } else if (Platform.isAndroid) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => LoginScreen(),
-                      ));
-                    }
+                  onPressed: () async {
+                FirebaseServices service = new FirebaseServices();
+                service.signInUser(context);
                   },
                   child: Icon(
                     MyFlutterApp.google,
-                    color: Colors.blueAccent,
+                    color: Colors.white,
                   ),
                 ),
                 CupertinoButton(
@@ -93,36 +87,12 @@ class _RegisterUiState extends State<RegisterUi> {
                   onPressed: () {},
                   child: Icon(
                     MyFlutterApp.facebook,
-                    color: Colors.blueAccent,
+                    color: Colors.white,
                   ),
                 ),
               ],
             ),
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Text("Already have an account?",
-                      style:
-                          TextStyle(color: Colors.black, fontFamily: "Ubuntu")),
-                ),
-                TextButton(
-                    onPressed: () {
-                      if (Platform.isIOS) {
-                        Navigator.of(context)
-                            .pushReplacement(CupertinoPageRoute(
-                          builder: (context) => LoginScreen(),
-                        ));
-                      } else if (Platform.isAndroid) {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => LoginScreen(),
-                        ));
-                      }
-                    },
-                    child: Text("Login"))
-              ],
-            ),
-          ],
+           ],
         ),
       ),
     );
