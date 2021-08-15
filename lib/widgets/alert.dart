@@ -14,7 +14,7 @@ class Alerts{
 
   void show(){
     if(Platform.isIOS){
-      showCupertinoDialog(context: context, builder: (context) => _alert(),barrierDismissible: true);
+      showCupertinoDialog(context: context, builder: (context) => _alert(),barrierDismissible: false);
     }if(Platform.isAndroid){
       showDialog(context: context, builder: (context) => _alert(),barrierDismissible: false);
     }

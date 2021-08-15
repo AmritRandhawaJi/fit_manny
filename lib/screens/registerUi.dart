@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:fit_manny/assets/my_flutter_app_icons.dart';
 import 'package:fit_manny/model/firebase.dart';
 import 'package:fit_manny/screens/phoneOTP.dart';
 import 'package:fit_manny/widgets/internetAlert.dart';
@@ -26,6 +25,10 @@ class _RegisterUiState extends State<RegisterUi> {
               child: Image.asset("images/register.png"),
             ),
             Text(
+              "#fitness is important for everyone",
+              style: TextStyle(fontSize: 20,fontFamily: "Ubuntu"),
+            ),
+            Text(
               "Let's create account",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -49,49 +52,24 @@ class _RegisterUiState extends State<RegisterUi> {
                 style: TextStyle(color: Colors.white),
               ),
             ),
-            Row(children: <Widget>[
-              Expanded(
-                child: new Container(
-                    margin: const EdgeInsets.only(left: 10.0, right: 15.0),
-                    child: Divider(
-                      color: Colors.black,
-                      height: 50,
-                    )),
-              ),
-              Text("OR"),
-              Expanded(
-                child: new Container(
-                    margin: const EdgeInsets.only(left: 15.0, right: 10.0),
-                    child: Divider(
-                      color: Colors.black,
-                      height: 50,
-                    )),
-              ),
-            ]),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                CupertinoButton(
-                  color: Colors.black,
-                  onPressed: () async {
-                FirebaseServices service = new FirebaseServices();
-                service.signInUser(context);
-                  },
-                  child: Icon(
-                    MyFlutterApp.google,
-                    color: Colors.white,
-                  ),
-                ),
-                CupertinoButton(
-                  color: Colors.black,
-                  onPressed: () {},
-                  child: Icon(
-                    MyFlutterApp.facebook,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+
+            CupertinoButton(
+
+              color: Colors.black,
+              onPressed: () async {
+            FirebaseServices service = new FirebaseServices();
+            service.signInUser(context);
+              },
+              child: Text("Continue with google"),
             ),
+
+            // Must be implemented for apple sign in
+            Container(
+              child: Platform.isIOS ? CupertinoButton(
+                  color: Colors.black,
+                  child: Text("Continue with apple"), onPressed: (){
+              }): null,
+            )
            ],
         ),
       ),

@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fit_manny/screens/goalForm.dart';
 import 'package:fit_manny/widgets/indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class RegisterForm extends StatefulWidget {
   @override
@@ -15,6 +17,9 @@ class RegisterForm extends StatefulWidget {
 class _RegisterFormState extends State<RegisterForm> {
   User _user = FirebaseAuth.instance.currentUser!;
 
+  String countryCode = "+91";
+  TextEditingController _numberField = TextEditingController();
+  GlobalKey<FormState> phoneAuthKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   GlobalKey<FormState> _nameKey = GlobalKey<FormState>();
@@ -30,6 +35,8 @@ class _RegisterFormState extends State<RegisterForm> {
   void dispose() {
     FirebaseFirestore.instance.terminate();
     _nameController.dispose();
+    _emailController.dispose();
+    _numberField.dispose();
     super.dispose();
   }
 
@@ -43,7 +50,7 @@ class _RegisterFormState extends State<RegisterForm> {
     await FirebaseFirestore.instance
         .collection("users")
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set({"ACCOUNT": true, "PROFILECOMPLETE": false},
+        .set({"account": true, "profileComplete": false},
             SetOptions(merge: true)).then((value) => {});
   }
 
@@ -87,30 +94,77 @@ class _RegisterFormState extends State<RegisterForm> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 40, right: 40),
-                    child: Form(
-                      key: _emailKey,
-                      child: TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Enter your email";
-                          } else if (!EmailValidator.validate(
-                              _emailController.value.text)) {
-                            return "Email invalid";
-                          } else {
-                            return null;
-                          }
-                        },
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintStyle: TextStyle(color: Colors.black),
-                            labelText: "What's your email?",
-                            labelStyle: TextStyle(color: Colors.black)),
-                      ),
-                    ),
+                  Container(
+                      child: !_user.emailVerified
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 40, right: 40),
+                              child: Form(
+                                key: _emailKey,
+                                child: TextFormField(
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return "Enter your email";
+                                    } else if (!EmailValidator.validate(
+                                        _emailController.value.text)) {
+                                      return "Email invalid";
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  controller: _emailController,
+                                  decoration: InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintStyle: TextStyle(color: Colors.black),
+                                      labelText: "What's your email?",
+                                      labelStyle:
+                                          TextStyle(color: Colors.black)),
+                                ),
+                              ),
+                            ):
+                      Container(
+                        height: 80,
+                        width: MediaQuery.of(context).size.width / 1.2,
+                        child: Form(
+                          key: phoneAuthKey,
+                          child: TextFormField(
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Phone number required.";
+                              } else if (value.length < 10) {
+                                return "Enter 10 digits.";
+                              } else {
+                                return null;
+                              }
+                            },
+                            controller: _numberField,
+                            maxLength: 10,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            keyboardType: TextInputType.number,
+                            autofillHints: [
+                              AutofillHints.telephoneNumber
+                            ],
+                            decoration: InputDecoration(
+                                prefixIcon: CountryCodePicker(
+                                  onChanged: (value) {
+                                    countryCode = value.toString();
+                                  },
+                                  initialSelection: 'IN',
+                                  favorite: ['+91', 'IN'],
+                                  showOnlyCountryWhenClosed: false,
+                                  alignLeft: false,
+                                ),
+                                border: OutlineInputBorder(),
+                                hintText: "Number",
+                                hintStyle: TextStyle(color: Colors.black),
+                                labelStyle:
+                                TextStyle(color: Colors.black)),
+                          ),
+                        ),
+                      )
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -204,9 +258,16 @@ class _RegisterFormState extends State<RegisterForm> {
                   ),
                   CupertinoButton(
                     onPressed: () {
-                      if (_nameKey.currentState!.validate() &
-                          _emailKey.currentState!.validate()) {
-                        _createDatabase();
+                      if (_nameKey.currentState!.validate()) {
+                        if (_emailKey.currentState != null) {
+                          if (_emailKey.currentState!.validate()) {
+                            _createDatabase(false);
+                          }
+                        } else if (phoneAuthKey.currentState != null) {
+                          if (phoneAuthKey.currentState!.validate()) {
+                            _createDatabase(true);
+                          }
+                        }
                       }
                     },
                     child: Text(
@@ -221,18 +282,21 @@ class _RegisterFormState extends State<RegisterForm> {
                 ])));
   }
 
-  Future<void> _createDatabase() async {
+  Future<void> _createDatabase(bool verificationRequired) async {
     setState(() {
       loading = true;
     });
     FirebaseFirestore.instance.collection("users").doc(_user.uid).set({
-      "NAME": _nameController.value.text,
-      "EMAIL": _emailController.value.text,
-      "AGE": _age.round().toString(),
-      "PHONE":   _user.phoneNumber,
-      "GENDER": _gender.toUpperCase(),
-      "REGISTRATION": DateTime.now().toString(),
-      "PROFILECOMPLETE": false
+      "name": _nameController.value.text,
+      "email": _user.emailVerified ? _user.email : _emailController.value.text,
+      "age": _age.round().toString(),
+      "phone": _user.phoneNumber != null
+          ? _user.phoneNumber
+          : countryCode + _numberField.value.text,
+      "gender": _gender.toUpperCase(),
+      "registration": DateTime.now().toString(),
+      "photoURL": "",
+      "verificationRequired": verificationRequired
     }, SetOptions(merge: true)).then((value) => {
           if (Platform.isIOS)
             {

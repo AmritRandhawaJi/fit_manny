@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fit_manny/model/userStateAuthentication.dart';
 import 'package:fit_manny/screens/decision.dart';
@@ -17,11 +16,16 @@ class FirebaseServices{
       await _googleSignIn.signIn();
       final GoogleSignInAuthentication googleSignInAuthentication =
       await googleSignInAccount!.authentication;
+
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
+      try{
       await _auth.signInWithCredential(credential);
+      }on FirebaseAuthException catch  (e){
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
       if (Platform.isIOS) {
         Navigator.of(context)
             .pushReplacement(CupertinoPageRoute(

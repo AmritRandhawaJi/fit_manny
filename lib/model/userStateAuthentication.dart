@@ -47,7 +47,7 @@ class _UserStateAuthenticationState extends State<UserStateAuthentication> {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get()
         .then((value) {
-      if (value.data() != null) {
+      if (value.exists) {
         if (Platform.isIOS) {
           Navigator.of(context).pushReplacement(CupertinoPageRoute(
             builder: (context) => Home(),

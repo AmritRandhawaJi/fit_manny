@@ -1,7 +1,7 @@
 enum Database{
-  AGE,
-  NAME,
-  EMAIL,
+  age,
+  name,
+  email,
   PHONE,
   GENDER,
   REGISTRATION,

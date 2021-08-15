@@ -180,9 +180,9 @@ class _GoalsFormState extends State<GoalsForm> {
     });
     FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser!.uid).set({
 
-      "FITNESSACTIVE" : _valueDisplay,
-      "GOAL" : _goalValue,
-      "PROFILECOMPLETE": true
+      "fitnessActive" : _valueDisplay,
+      "goal" : _goalValue,
+      "profileComplete": true
     }, SetOptions(merge: true)).then((value) => {
       if (Platform.isIOS)
         {

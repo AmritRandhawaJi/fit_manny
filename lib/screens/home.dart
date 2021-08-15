@@ -1,8 +1,12 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fit_manny/model/firebase.dart';
+import 'package:fit_manny/screens/mainScreens/profile.dart';
+import 'package:fit_manny/widgets/errors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -10,61 +14,105 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  @override
-  Widget build(BuildContext context) {
-    return AccountSetting();
+  FirebaseFirestore server = FirebaseFirestore.instance;
+
+  Future<dynamic> _validate() async {
+    await server
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        if (documentSnapshot.get("profileComplete") == false) {
+          Error(context, "Profile incomplete",
+                  "Please complete your profile to continue", "Proceed")
+              .show();
+        }
+      } else {
+        FirebaseServices().signOutUser(context);
+      }
+    });
   }
-}
-
-class AccountSetting extends StatefulWidget {
 
   @override
-  _AccountSettingState createState() => _AccountSettingState();
-}
-
-class _AccountSettingState extends State<AccountSetting> {
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+  void initState() {
+    _validate();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(
-                  "Amrit Randhawa",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "Ubuntu"),
-                ),
-                Text(
-                  FirebaseAuth.instance.currentUser!.displayName.toString(),
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "Ubuntu"),
-                )
-              ],
-            ),
-            SizedBox(
-              height: 30.0,
-            ),
-            CupertinoButton(
-              color: Colors.black,
-              onPressed: () async {
-                FirebaseServices service = new FirebaseServices();
-                service.signOutUser(context);
-              },
-              child: Text("Sign out"),
+        appBar: AppBar(
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: GestureDetector(onTap: (){
+                if (Platform.isIOS) {
+                  Navigator.of(context).push(CupertinoPageRoute(builder: (context) => Profile(),));
+                }
+                 if (Platform.isAndroid) {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => Profile(),));
+                }              },child: Icon(Icons.account_circle_outlined,color: Colors.black,)),
             )
           ],
+            elevation: 0,
+            backgroundColor: Colors.white,
+            leading: Builder(builder: (BuildContext context) {
+              return IconButton(
+                icon: const Icon(Icons.drag_handle,color: Colors.black,),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+              );
+            })),
+        drawer: Drawer(
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: [
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Text('Drawer Header'),
+              ),
+              ListTile(
+                title: const Text('Item 1'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+              ListTile(
+                title: const Text('Item 2'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+        backgroundColor: Colors.white,
+        body: SlidingUpPanel(
+              panelBuilder: (sc) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Icon(Icons.email),
+                    Icon(Icons.email),
+                    Icon(Icons.email),
+                    Icon(Icons.email),
+                  ],
+                );
+              },
+          body: Column(
+            children: [
+              
+            ],
+          )
+        ));
   }
 }
