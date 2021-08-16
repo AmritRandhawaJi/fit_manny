@@ -26,7 +26,7 @@ dependencies:
   google_sign_in: ^5.0.7
   shimmer: ^2.0.0
   sliding_up_panel: ^2.0.0+1
-
+  rive: ^0.7.22
 
 
 
@@ -44,6 +44,7 @@ flutter:
 
   assets:
     - images/
+    - anim/
   fonts:
     - family: MyFlutterApp
       fonts:
