@@ -65,11 +65,11 @@ class _UserStateAuthenticationState extends State<UserStateAuthentication> {
       } else {
         if (Platform.isIOS) {
           Navigator.of(context).pushReplacement(CupertinoPageRoute(
-            builder: (context) => RegisterForm(number: widget.number,countryCode: widget.countryCode,),
+            builder: (context) => RegisterForm(),
           ));
         } else if (Platform.isAndroid) {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => RegisterForm(number: widget.number,countryCode: widget.countryCode,),
+            builder: (context) => RegisterForm(),
           ));
         }
       }

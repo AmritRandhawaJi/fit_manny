@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:fit_manny/screens/registerUi.dart';
+import 'package:fit_manny/screens/LoginUI.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -64,11 +64,11 @@ class _DecisionState extends State<Decision> {
                 onPressed: () {
                   if (Platform.isIOS) {
                     Navigator.of(context).pushReplacement(CupertinoPageRoute(
-                      builder: (context) => RegisterUi(),
+                      builder: (context) => LoginUi(),
                     ));
                   } else if (Platform.isAndroid) {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => RegisterUi(),
+                      builder: (context) => LoginUi(),
                     ));
                   }
                 },

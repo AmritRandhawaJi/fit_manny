@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fit_manny/screens/goalForm.dart';
@@ -10,23 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class RegisterForm extends StatefulWidget {
-  final String countryCode;
-  final String number;
-
-  RegisterForm({required this.countryCode,required this.number});
-
-
-
   @override
   _RegisterFormState createState() => _RegisterFormState();
 }
 
 class _RegisterFormState extends State<RegisterForm> {
   User _user = FirebaseAuth.instance.currentUser!;
-
-  String countryCode = "+91";
-  TextEditingController _numberField = TextEditingController();
-  GlobalKey<FormState> phoneAuthKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   GlobalKey<FormState> _nameKey = GlobalKey<FormState>();
@@ -35,7 +23,7 @@ class _RegisterFormState extends State<RegisterForm> {
   double _age = 18;
   String _ageDisplay = "18";
 
-  bool loading = false;
+  bool _loading = false;
   var _gender = "Male";
 
   @override
@@ -43,23 +31,15 @@ class _RegisterFormState extends State<RegisterForm> {
     FirebaseFirestore.instance.terminate();
     _nameController.dispose();
     _emailController.dispose();
-    _numberField.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    _registerUser();
+
     super.initState();
   }
 
-  Future<void> _registerUser() async {
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set({"account": true, "profileComplete": false},
-            SetOptions(merge: true)).then((value) => {});
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +81,8 @@ class _RegisterFormState extends State<RegisterForm> {
                       ),
                     ),
                   ),
-                  Container(
-                      child: !_user.emailVerified
-                          ? Padding(
+
+                      Padding(
                               padding:
                                   const EdgeInsets.only(left: 40, right: 40),
                               child: Form(
@@ -129,50 +108,7 @@ class _RegisterFormState extends State<RegisterForm> {
                                           TextStyle(color: Colors.black)),
                                 ),
                               ),
-                            ):
-                      Container(
-                        height: 80,
-                        width: MediaQuery.of(context).size.width / 1.2,
-                        child: Form(
-                          key: phoneAuthKey,
-                          child: TextFormField(
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Phone number required.";
-                              } else if (value.length < 10) {
-                                return "Enter 10 digits.";
-                              } else {
-                                return null;
-                              }
-                            },
-                            controller: _numberField,
-                            maxLength: 10,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            keyboardType: TextInputType.number,
-                            autofillHints: [
-                              AutofillHints.telephoneNumber
-                            ],
-                            decoration: InputDecoration(
-                                prefixIcon: CountryCodePicker(
-                                  onChanged: (value) {
-                                    countryCode = value.toString();
-                                  },
-                                  initialSelection: 'IN',
-                                  favorite: ['+91', 'IN'],
-                                  showOnlyCountryWhenClosed: false,
-                                  alignLeft: false,
-                                ),
-                                border: OutlineInputBorder(),
-                                hintText: "Number",
-                                hintStyle: TextStyle(color: Colors.black),
-                                labelStyle:
-                                TextStyle(color: Colors.black)),
-                          ),
-                        ),
-                      )
-                  ),
+                            ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -266,16 +202,8 @@ class _RegisterFormState extends State<RegisterForm> {
                   CupertinoButton(
                     onPressed: () {
                       if (_nameKey.currentState!.validate()) {
-                        if (_emailKey.currentState != null) {
-                          if (_emailKey.currentState!.validate()) {
-                            _createDatabase(false);
+                            _createDatabase();
                           }
-                        } else if (phoneAuthKey.currentState != null) {
-                          if (phoneAuthKey.currentState!.validate()) {
-                            _createDatabase(true);
-                          }
-                        }
-                      }
                     },
                     child: Text(
                       "Create",
@@ -284,25 +212,23 @@ class _RegisterFormState extends State<RegisterForm> {
                     color: Colors.black,
                   ),
                   Container(
-                    child: loading ? Indicator.show(context) : null,
+                    child: _loading ? Indicator.show(context) : null,
                   ),
                 ])));
   }
 
-  Future<void> _createDatabase(bool verificationRequired) async {
+  Future<void> _createDatabase( ) async {
     setState(() {
-      loading = true;
+      _loading = true;
     });
     FirebaseFirestore.instance.collection("users").doc(_user.uid).set({
       "name": _nameController.value.text,
       "email": _emailController.value.text,
       "age": _age.round().toString(),
-      "phone": widget.number,
-      "countryCode" : widget.countryCode,
-      "gender": _gender.toUpperCase(),
+      "phone": _user.phoneNumber,
+      "gender": _gender,
       "registration": DateTime.now().toString(),
-      "photoURL": "",
-      "verificationRequired": verificationRequired
+      "photoURL": ""
     }, SetOptions(merge: true)).then((value) => {
           if (Platform.isIOS)
             {

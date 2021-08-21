@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fit_manny/model/migration.dart';
+import 'package:fit_manny/screens/mainScreens/profile.dart';
 import 'package:fit_manny/widgets/indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,16 +13,9 @@ class ProfileEdit extends StatefulWidget {
 }
 
 class _ProfileEditState extends State<ProfileEdit> {
-  String _phone = "";
   String _email = "";
   String _name = "";
-  String _country = "";
   bool _loading = true;
-  FirebaseFirestore _server = FirebaseFirestore.instance;
-
-  final GlobalKey<FormState> phoneAuthKey = GlobalKey<FormState>();
-
-  final TextEditingController _numberField = TextEditingController();
 
   final TextEditingController _nameController = TextEditingController();
 
@@ -34,20 +25,21 @@ class _ProfileEditState extends State<ProfileEdit> {
 
   final GlobalKey<FormState> _emailKey = GlobalKey<FormState>();
 
-  Future<dynamic> _data() async {
+  Future<void> _display() async {
+    FirebaseFirestore _server = FirebaseFirestore.instance;
     await _server
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get()
         .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        _name = documentSnapshot.get("name");
+        _email = documentSnapshot.get("email");
+        _nameController..text = documentSnapshot.get("name");
+        _emailController..text = documentSnapshot.get("email");
+
+      }
       setState(() {
-        _nameController..text = documentSnapshot.get("name").toString();
-        _phone = documentSnapshot.get("phone").toString();
-        _email = documentSnapshot.get("email").toString();
-        _name = documentSnapshot.get("name").toString();
-        _country = documentSnapshot.get("countryCode").toString();
-        _numberField..text = documentSnapshot.get("phone").toString();
-        _emailController..text = documentSnapshot.get("email").toString();
         _loading = false;
       });
     });
@@ -55,8 +47,8 @@ class _ProfileEditState extends State<ProfileEdit> {
 
   @override
   void initState() {
-    _data();
-    super.initState();
+_display();
+super.initState();
   }
 
   @override
@@ -66,7 +58,7 @@ class _ProfileEditState extends State<ProfileEdit> {
           child: _loading
               ? Center(child: Indicator.show(context))
               : Center(
-                child: ListView(
+                  child: ListView(
                     shrinkWrap: true,
                     children: [
                       Column(
@@ -76,18 +68,20 @@ class _ProfileEditState extends State<ProfileEdit> {
                             width: 120,
                             height: 120,
                           ),
-                          TextButton(onPressed: (){
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("Coming soon"),
-                            ));
-                          }, child: Text("Change photo")),
+                          TextButton(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text("Coming soon"),
+                                ));
+                              },
+                              child: Text("Change photo")),
                           Padding(
                             padding: const EdgeInsets.all(20.0),
                             child: Container(
                               child: Form(
                                 key: _nameKey,
                                 child: TextFormField(
-
                                   validator: (value) {
                                     if (value!.isEmpty) {
                                       return "Enter your name";
@@ -100,47 +94,8 @@ class _ProfileEditState extends State<ProfileEdit> {
                                       border: OutlineInputBorder(),
                                       hintStyle: TextStyle(color: Colors.black),
                                       labelText: "What's your name?",
-                                      labelStyle: TextStyle(color: Colors.black)),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Container(
-                              child: Form(
-                                key: phoneAuthKey,
-                                child: TextFormField(
-
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return "Phone number required.";
-                                    } else if (value.length < 10) {
-                                      return "Enter 10 digits.";
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                  controller: _numberField,
-                                  maxLength: 10,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  keyboardType: TextInputType.number,
-                                  autofillHints: [AutofillHints.telephoneNumber],
-                                  decoration: InputDecoration(
-                                      prefixIcon: CountryCodePicker(
-                                        initialSelection: _country,
-                                        onChanged: (value) {
-                                          _country = value.toString();
-                                        },
-                                        showOnlyCountryWhenClosed: false,
-                                        alignLeft: false,
-                                      ),
-                                      border: OutlineInputBorder(),
-                                      hintText: "Number",
-                                      hintStyle: TextStyle(color: Colors.black),
-                                      labelStyle: TextStyle(color: Colors.black)),
+                                      labelStyle:
+                                          TextStyle(color: Colors.black)),
                                 ),
                               ),
                             ),
@@ -151,7 +106,6 @@ class _ProfileEditState extends State<ProfileEdit> {
                                 child: Form(
                               key: _emailKey,
                               child: TextFormField(
-
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
                                   if (value!.isEmpty) {
@@ -172,7 +126,6 @@ class _ProfileEditState extends State<ProfileEdit> {
                               ),
                             )),
                           ),
-
                           CupertinoButton(
                               color: Colors.black,
                               child: Text(
@@ -181,28 +134,26 @@ class _ProfileEditState extends State<ProfileEdit> {
                               ),
                               onPressed: () {
                                 if (_nameKey.currentState!.validate() &
-                                _emailKey.currentState!.validate() &
-                                _nameKey.currentState!.validate()) {
+                                    _emailKey.currentState!.validate() &
+                                    _nameKey.currentState!.validate()) {
                                   updateData();
                                 }
-
                               }),
                         ],
                       )
                     ],
                   ),
-              )),
+                )),
     );
   }
 
   updateData() async {
     if (_needUpdateEmail()) {
       await _changeEmail();
-    } else if (_needUpdatePhone()) {
-      _migration();
     } else if (_needUpdateName()) {
-      _changeName();
-    } else {
+   await _changeName();
+    }
+    else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Already updated"),
       ));
@@ -223,13 +174,6 @@ class _ProfileEditState extends State<ProfileEdit> {
     return true;
   }
 
-  bool _needUpdatePhone() {
-    if (_numberField.value.text == _phone) {
-      return false;
-    }
-    return true;
-  }
-
   Future<void> _changeEmail() async {
     FirebaseFirestore.instance
         .collection("users")
@@ -237,11 +181,9 @@ class _ProfileEditState extends State<ProfileEdit> {
         .set({
       "email": _emailController.value.text,
     }, SetOptions(merge: true)).then((value) => {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("Email updated"),
-              )),
-              if (_needUpdatePhone()) {_migration()}
-            });
+    Navigator.pop(context,"Updated")
+
+    });
   }
 
   Future<void> _changeName() async {
@@ -251,25 +193,7 @@ class _ProfileEditState extends State<ProfileEdit> {
         .set({
       "name": _nameController.value.text,
     }, SetOptions(merge: true)).then((value) => {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("Name updated"),
-              )),
-              if (_needUpdatePhone()) {_migration()}
+              Navigator.pop(context,"Updated")
             });
-  }
-
-  _migration() {
-    if (Platform.isIOS) {
-      Navigator.of(context).pushReplacement(CupertinoPageRoute(
-        builder: (context) => Migration(
-            _numberField.value.text, _nameController.value.text, _country),
-      ));
-    }
-    if (Platform.isAndroid) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => Migration(
-            _numberField.value.text, _nameController.value.text, _country),
-      ));
-    }
   }
 }

@@ -1,17 +1,16 @@
 import 'dart:io';
-import 'package:fit_manny/model/firebase.dart';
 import 'package:fit_manny/screens/phoneOTP.dart';
 import 'package:fit_manny/widgets/internetAlert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-class RegisterUi extends StatefulWidget {
+class LoginUi extends StatefulWidget {
   @override
-  _RegisterUiState createState() => _RegisterUiState();
+  _LoginUiState createState() => _LoginUiState();
 }
 
-class _RegisterUiState extends State<RegisterUi> {
+class _LoginUiState extends State<LoginUi> {
 
   @override
   Widget build(BuildContext context) {
@@ -20,18 +19,16 @@ class _RegisterUiState extends State<RegisterUi> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            Text(
+              "Welcome",
+              style: TextStyle(fontFamily: "Ubuntu",color: Colors.black),
+            ),
             Container(
               width: MediaQuery.of(context).size.width,
               child: Image.asset("images/register.png"),
             ),
-            Text(
-              "#Login to start your personal training.",
-              style: TextStyle(fontSize: 20,fontFamily: "Ubuntu"),
-            ),
-            Text(
-              "Let's create account",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+
+
             CupertinoButton(
               color: Colors.black,
               onPressed: () async {
@@ -52,25 +49,13 @@ class _RegisterUiState extends State<RegisterUi> {
                 style: TextStyle(color: Colors.white),
               ),
             ),
-
-            CupertinoButton(
-
-              color: Colors.black,
-              onPressed: () async {
-            FirebaseServices service = new FirebaseServices(context);
-            service.signInUser(context);
-              },
-              child: Text("Continue with google"),
+            Flexible(
+              child: Text(
+                "#Fitness is important for everyone.",
+                style: TextStyle(fontSize: 20,fontFamily: "Ubuntu"),
+              ),
             ),
-
-            // Must be implemented for apple sign in
-            Container(
-              child: Platform.isIOS ? CupertinoButton(
-                  color: Colors.black,
-                  child: Text("Continue with apple"), onPressed: (){
-              }): null,
-            )
-           ],
+          ],
         ),
       ),
     );

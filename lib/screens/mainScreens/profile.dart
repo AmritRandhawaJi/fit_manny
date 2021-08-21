@@ -1,11 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fit_manny/model/firebase.dart';
-import 'package:fit_manny/model/migration.dart';
+import 'package:fit_manny/model/firebaseServices.dart';
 import 'package:fit_manny/model/profileEdit.dart';
 import 'package:fit_manny/screens/accountSettings.dart';
-import 'package:fit_manny/screens/decision.dart';
+import 'package:fit_manny/widgets/indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -16,29 +16,30 @@ class Profile extends StatefulWidget {
 }
 
 class ProfileState extends State<Profile> {
-  FirebaseFirestore server = FirebaseFirestore.instance;
-  bool loading = true;
-  String name = "";
-  String country = "";
-  bool verification = false;
-  String email = "";
-  String phone = "";
-  String photoURL = "";
 
-  Future<dynamic> _display() async {
-    await server
+
+  User? _auth = FirebaseAuth.instance.currentUser;
+  bool _loading = true;
+  String _name = "";
+  String _email = "";
+  String _photoURL = "";
+  String _age = "";
+
+  Future<void> _display() async {
+    FirebaseFirestore _server = FirebaseFirestore.instance;
+    await _server
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get()
         .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        _name = documentSnapshot.get("name");
+        _age = documentSnapshot.get("age");
+        _email = documentSnapshot.get("email");
+        _photoURL = documentSnapshot.get("photoURL");
+      }
       setState(() {
-        name = documentSnapshot.get("name");
-        country = documentSnapshot.get("countryCode");
-        phone = documentSnapshot.get("phone");
-        email = documentSnapshot.get("email");
-        verification = documentSnapshot.get("verificationRequired");
-        photoURL = documentSnapshot.get("photoURL");
-        loading = false;
+        _loading = false;
       });
     });
   }
@@ -48,7 +49,12 @@ class ProfileState extends State<Profile> {
     _display();
     super.initState();
   }
-
+  FutureOr onGoBack() {
+    setState(() {
+      _display();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Updated"),));
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -68,182 +74,106 @@ class ProfileState extends State<Profile> {
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            return loading
+            return _loading
                 ? Shimmer.fromColors(
-                    child:
-                        ProfileView(name, email, photoURL, phone, verification,country),
-                    baseColor: Colors.grey.shade200,
-                    highlightColor: Colors.grey.shade50)
-                : ProfileView(name, email, photoURL, phone, verification,country);
+              highlightColor: Colors.black,
+              baseColor: Colors.grey.shade100,
+              child: Center(child: Indicator.show(context)))
+                : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+
+                        Center(
+                          child: CircleAvatar(
+                            child: _photoURL.isEmpty
+                                ? Image.asset("images/profile.png")
+                                : null,
+                            backgroundImage: _photoURL.isEmpty
+                                ? null
+                                : NetworkImage(_photoURL),
+                            backgroundColor: Colors.grey.shade100,
+                            maxRadius: MediaQuery.of(context).size.width / 5,
+                          ),
+                        ),
+
+                        Center(child: Text(_name,style: TextStyle(fontSize: 18,color: Colors.black87,fontFamily: "Ubuntu"),)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Center(child: Text("Age",style: TextStyle(),)),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Center(child: Text(_age,style: TextStyle(fontSize: 18,color: Colors.black87,fontFamily: "Ubuntu"),)),
+
+                          ],
+                        ),
+                        Center(
+                          child: TextButton(
+                              onPressed: () async {
+                                if (Platform.isIOS) {
+                                 Navigator.of(context).push(CupertinoPageRoute(
+                                    builder: (context) => ProfileEdit(),
+                                  )
+                                 ).then((value) => onGoBack());
+
+                                } if (Platform.isAndroid) {
+                                final result = await Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => ProfileEdit(),
+                                  )
+                                  ).then((value) => onGoBack());
+                                }
+                              },
+                              child: Text("Edit profile")),
+                        ),
+                        _layout("Email", _email),
+                        _layout("Number", _auth!.phoneNumber.toString()),
+                        GestureDetector(
+                          onTap: () {
+                            if (Platform.isIOS) {
+                              Navigator.of(context).push(CupertinoPageRoute(
+                                builder: (context) => AccountSettings(),
+                              ));
+                            }
+                            if (Platform.isAndroid) {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => AccountSettings(),
+                              ));
+                            }
+                          },
+                          child: Container(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("Privacy & settings"),
+                                  Icon(Icons.arrow_forward_ios)
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: CupertinoButton(
+                              color: Colors.blue,
+                              child: Text("Logout"),
+                              onPressed: () {
+                                FirebaseServices services = new FirebaseServices();
+                                services.signOut(context);
+                              }),
+                        ),
+                      ],
+                    );
           },
         ),
       ),
     );
   }
-}
 
-class ProfileView extends StatefulWidget {
-  final String name;
-  final String email;
-  final String country;
-  final String photoURL;
-  final String number;
-  final bool verificationRequired;
-
-  ProfileView(this.name, this.email, this.photoURL, this.number,
-      this.verificationRequired,this.country);
-
-  @override
-  _ProfileViewState createState() => _ProfileViewState();
-}
-
-class _ProfileViewState extends State<ProfileView> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Center(
-          child: Text(
-            "Profile",
-            style: TextStyle(
-                fontSize: 24, color: Colors.black, fontFamily: "Ubuntu"),
-          ),
-        ),
-        Center(
-          child: CircleAvatar(
-            child: widget.photoURL.isEmpty
-                ? Image.asset("images/profile.png")
-                : null,
-            backgroundImage:
-                widget.photoURL.isEmpty ? null : NetworkImage(widget.photoURL),
-            backgroundColor: Colors.grey.shade100,
-            maxRadius: MediaQuery.of(context).size.width / 5,
-          ),
-        ),
-        Center(
-          child: TextButton(
-              onPressed: () {
-                if (Platform.isIOS) {
-                  Navigator.of(context).push(CupertinoPageRoute(
-                    builder: (context) => ProfileEdit(),
-                  ));
-                } else if (Platform.isAndroid) {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ProfileEdit(),
-                  ));
-                }
-              },
-              child: Text("Edit profile")),
-        ),
-        Center(
-          child: Container(
-              child: widget.verificationRequired
-                  ? TextButton(
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.warning,
-                            color: Colors.red,
-                          ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          TextButton(
-                            child: Text("Verify Number"),
-                            onPressed: () {
-                              if (Platform.isIOS) {
-                                Navigator.of(context).push(CupertinoPageRoute(
-                                  builder: (context) => Migration(widget.number,widget.name,widget.country),
-                                ));
-                              }
-                              if (Platform.isAndroid) {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => Migration(widget.number,widget.name,widget.country),
-                                ));
-                              }
-                            },
-                          )
-                        ],
-                      ))
-                  : Column(
-                      children: [
-                        Text(widget.number),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Verified",style: TextStyle(color: Colors.green),)
-                            ,Icon(
-                              Icons.check,
-                              color: Colors.green,
-                            ),
-                          ],
-                        )
-                      ],
-                    )),
-        ),
-        _layout("Name", widget.name, widget.verificationRequired),
-        _layout("Email", widget.email, widget.verificationRequired),
-        _layout("Number", widget.number, widget.verificationRequired),
-        GestureDetector(
-          onTap: () {
-            if (Platform.isIOS) {
-              Navigator.of(context).push(CupertinoPageRoute(
-                builder: (context) => AccountSettings(),
-              ));
-            }
-            if (Platform.isAndroid) {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => AccountSettings(),
-              ));
-            }
-          },
-          child: Container(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Privacy & settings"),
-                  Icon(Icons.arrow_forward_ios)
-                ],
-              ),
-            ),
-          ),
-        ),
-        Center(
-          child: CupertinoButton(
-              color: Colors.blue,
-              child: Text("Logout"),
-              onPressed: () {
-                if(FirebaseAuth.instance.currentUser !=null){
-                  FirebaseAuth.instance.signOut();
-                  if (Platform.isIOS)
-                  {
-                    Navigator.of(context).pushReplacement(CupertinoPageRoute(
-                      builder: (context) => Decision(),
-                    ));
-                  }
-                  else if (Platform.isAndroid)
-                  {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => Decision(),
-                    ));
-                  }
-                }
-              }),
-        ),
-      ],
-    );
-  }
-
-  Widget _layout(String title, String data, bool verification) {
+  Widget _layout(String title, String data) {
     return Padding(
       padding: const EdgeInsets.only(left: 20),
       child: Column(
