@@ -9,19 +9,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class RegisterForm extends StatefulWidget {
-  final String countryCode;
-  final String number;
-
-  RegisterForm({required this.countryCode,required this.number});
-
-
+class GoogleForm extends StatefulWidget {
+  const GoogleForm({Key? key}) : super(key: key);
 
   @override
-  _RegisterFormState createState() => _RegisterFormState();
+  _GoogleFormState createState() => _GoogleFormState();
 }
 
-class _RegisterFormState extends State<RegisterForm> {
+class _GoogleFormState extends State<GoogleForm> {
   User _user = FirebaseAuth.instance.currentUser!;
 
   String countryCode = "+91";
@@ -58,7 +53,7 @@ class _RegisterFormState extends State<RegisterForm> {
         .collection("users")
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .set({"account": true, "profileComplete": false},
-            SetOptions(merge: true)).then((value) => {});
+        SetOptions(merge: true)).then((value) => {});
   }
 
   @override
@@ -104,32 +99,32 @@ class _RegisterFormState extends State<RegisterForm> {
                   Container(
                       child: !_user.emailVerified
                           ? Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 40, right: 40),
-                              child: Form(
-                                key: _emailKey,
-                                child: TextFormField(
-                                  keyboardType: TextInputType.emailAddress,
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return "Enter your email";
-                                    } else if (!EmailValidator.validate(
-                                        _emailController.value.text)) {
-                                      return "Email invalid";
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                  controller: _emailController,
-                                  decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintStyle: TextStyle(color: Colors.black),
-                                      labelText: "What's your email?",
-                                      labelStyle:
-                                          TextStyle(color: Colors.black)),
-                                ),
-                              ),
-                            ):
+                        padding:
+                        const EdgeInsets.only(left: 40, right: 40),
+                        child: Form(
+                          key: _emailKey,
+                          child: TextFormField(
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Enter your email";
+                              } else if (!EmailValidator.validate(
+                                  _emailController.value.text)) {
+                                return "Email invalid";
+                              } else {
+                                return null;
+                              }
+                            },
+                            controller: _emailController,
+                            decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintStyle: TextStyle(color: Colors.black),
+                                labelText: "What's your email?",
+                                labelStyle:
+                                TextStyle(color: Colors.black)),
+                          ),
+                        ),
+                      ):
                       Container(
                         height: 80,
                         width: MediaQuery.of(context).size.width / 1.2,
@@ -210,9 +205,9 @@ class _RegisterFormState extends State<RegisterForm> {
                         thumbColor: Colors.pink[100],
                         valueIndicatorColor: Colors.teal,
                         thumbShape:
-                            RoundSliderThumbShape(enabledThumbRadius: 15.0),
+                        RoundSliderThumbShape(enabledThumbRadius: 15.0),
                         overlayShape:
-                            RoundSliderOverlayShape(overlayRadius: 30.0),
+                        RoundSliderOverlayShape(overlayRadius: 30.0),
                       )),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -226,7 +221,7 @@ class _RegisterFormState extends State<RegisterForm> {
                           Text(
                             "Male",
                             style:
-                                TextStyle(fontFamily: "Ubuntu", fontSize: 18),
+                            TextStyle(fontFamily: "Ubuntu", fontSize: 18),
                           ),
                           Radio(
                             value: "Male",
@@ -248,7 +243,7 @@ class _RegisterFormState extends State<RegisterForm> {
                           Text(
                             "Female",
                             style:
-                                TextStyle(fontFamily: "Ubuntu", fontSize: 18),
+                            TextStyle(fontFamily: "Ubuntu", fontSize: 18),
                           ),
                           Radio(
                             value: "Female",
@@ -295,27 +290,27 @@ class _RegisterFormState extends State<RegisterForm> {
     });
     FirebaseFirestore.instance.collection("users").doc(_user.uid).set({
       "name": _nameController.value.text,
-      "email": _emailController.value.text,
+      "email": _user.email,
       "age": _age.round().toString(),
-      "phone": widget.number,
-      "countryCode" : widget.countryCode,
+      "phone": _numberField.value.text,
+      "countryCode" : _emailController.value.text,
       "gender": _gender.toUpperCase(),
       "registration": DateTime.now().toString(),
       "photoURL": "",
       "verificationRequired": verificationRequired
     }, SetOptions(merge: true)).then((value) => {
-          if (Platform.isIOS)
-            {
-              Navigator.of(context).pushReplacement(CupertinoPageRoute(
-                builder: (context) => GoalsForm(),
-              ))
-            }
-          else if (Platform.isAndroid)
-            {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => GoalsForm(),
-              ))
-            }
-        });
+      if (Platform.isIOS)
+        {
+          Navigator.of(context).pushReplacement(CupertinoPageRoute(
+            builder: (context) => GoalsForm(),
+          ))
+        }
+      else if (Platform.isAndroid)
+        {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => GoalsForm(),
+          ))
+        }
+    });
   }
 }

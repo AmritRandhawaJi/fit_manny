@@ -87,14 +87,14 @@ class _MobileAuthenticationState extends State<MobileAuthentication> {
           CupertinoButton(
             onPressed: () {
               if (phoneAuthKey.currentState!.validate()) {
-                String number = countryCode + numberField.text;
+
                 if (Platform.isIOS) {
                   Navigator.of(context).pushReplacement(CupertinoPageRoute(
-                    builder: (context) => PhoneAuthFirebase(number),
+                    builder: (context) => PhoneAuthFirebase(countryCode: countryCode,number: numberField.value.text,),
                   ));
                 } else if (Platform.isAndroid) {
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (context) => PhoneAuthFirebase(number),
+                    builder: (context) => PhoneAuthFirebase(countryCode: countryCode,number: numberField.value.text,),
                   ));
                 }
               }

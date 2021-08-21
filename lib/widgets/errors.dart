@@ -1,43 +1,40 @@
 
 import 'dart:io';
-
-import 'package:fit_manny/screens/home.dart';
-import 'package:fit_manny/screens/registerForm.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Error{
-  BuildContext context;
-  String title;
-  String content;
-  String errorRight;
+  BuildContext _context;
+  String _title;
+  String _content;
+  String _errorRight;
 
 
-  Error(this.context, this.title,this.content, this.errorRight);
+  Error(this._context, this._title,this._content, this._errorRight);
 
-  void show(){
+  void show(Widget className){
     if(Platform.isIOS){
-      showCupertinoDialog(context: context, builder: (context) => alert(),barrierDismissible: false);
+      showCupertinoDialog(context: _context, builder: (context) => _alert(className),barrierDismissible: false);
     }if(Platform.isAndroid){
-      showDialog(context: context, builder: (context) => alert(),barrierDismissible: false);
+      showDialog(context: _context, builder: (context) => _alert(className),barrierDismissible: false);
     }
   }
-  Widget alert(){
+  Widget _alert(Widget className){
     return Platform.isIOS ? CupertinoAlertDialog(
-      content: Text(content),
-      title: Text(title),
+      content: Text(_content),
+      title: Text(_title),
       actions: [
         TextButton(onPressed: (){
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterForm(),));
-        }, child: Text(errorRight)),
+          Navigator.pushReplacement(_context, MaterialPageRoute(builder: (context) => className,));
+        }, child: Text(_errorRight)),
       ],
     ):AlertDialog(
-      title: Text(title),
-      content: Text(content),
+      title: Text(_title),
+      content: Text(_content),
       actions: [
         TextButton(onPressed: (){
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterForm(),));
-        }, child: Text(errorRight)),
+          Navigator.pushReplacement(_context, MaterialPageRoute(builder: (context) => className,));
+        }, child: Text(_errorRight)),
       ],
     );
   }

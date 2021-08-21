@@ -23,47 +23,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
-
-
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance!.addPostFrameCallback((_) => Future.delayed(Duration(seconds: 2),(){
-      _checkUser();
-    }));
+    WidgetsBinding.instance!
+        .addPostFrameCallback((_) => Future.delayed(Duration(seconds: 2), () {
+              _checkUser();
+            }));
     return Scaffold(
       body: Center(child: Indicator.show(context)),
     ); // widget tree
   }
 
-  void _checkUser() async {
-
-    if (FirebaseAuth.instance.currentUser == null) {
-
-      final value = await SharedPreferences.getInstance();
-      if (value.getInt("userState") != 1) {
-        if (Platform.isIOS) {
-          Navigator.of(context).pushReplacement(CupertinoPageRoute(
-            builder: (context) => GettingStartedScreen(),
-          ));
-        } if (Platform.isAndroid) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => GettingStartedScreen(),
-          ));
-        }
-      } else {
-        if (Platform.isIOS) {
-          Navigator.of(context).pushReplacement(CupertinoPageRoute(
-            builder: (context) => Decision(),
-          ));
-        } if (Platform.isAndroid) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => Decision(),
-          ));
-        }
-      }
-
-    } else {
+  Future<void> _checkUser() async {
+    if (FirebaseAuth.instance.currentUser != null) {
       if (Platform.isIOS) {
         Navigator.of(context).pushReplacement(CupertinoPageRoute(
           builder: (context) => Home(),
@@ -74,6 +46,39 @@ class _MyAppState extends State<MyApp> {
           builder: (context) => Home(),
         ));
       }
+    } else {
+      _newUser();
     }
-}
+  }
+
+  _newUser() async {
+    final value = await SharedPreferences.getInstance();
+    if (value.getInt("userState") != 1) {
+      if (Platform.isIOS) {
+        Navigator.of(context).pushReplacement(CupertinoPageRoute(
+          builder: (context) => GettingStartedScreen(),
+        ));
+      }
+      if (Platform.isAndroid) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => GettingStartedScreen(),
+        ));
+      }
+    } else {
+      _welcomePage();
+    }
+  }
+
+  _welcomePage() {
+    if (Platform.isIOS) {
+      Navigator.of(context).pushReplacement(CupertinoPageRoute(
+        builder: (context) => Decision(),
+      ));
+    }
+    if (Platform.isAndroid) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => Decision(),
+      ));
+    }
+  }
 }

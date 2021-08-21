@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fit_manny/model/userStateAuthentication.dart';
 import 'package:fit_manny/screens/phoneOTP.dart';
-import 'package:fit_manny/widgets/alert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,8 +9,9 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 
 class PhoneAuthFirebase extends StatefulWidget {
   final String number;
+  final String countryCode;
 
-  PhoneAuthFirebase(this.number);
+  PhoneAuthFirebase({required this.number, required this.countryCode});
 
   @override
   _PhoneAuthFirebaseState createState() => _PhoneAuthFirebaseState();
@@ -25,7 +25,7 @@ class _PhoneAuthFirebaseState extends State<PhoneAuthFirebase> {
 
   @override
   void initState() {
-    _mobileAuthFirebase(widget.number);
+    _mobileAuthFirebase(widget.countryCode + widget.number);
     super.initState();
   }
 
@@ -58,7 +58,7 @@ class _PhoneAuthFirebaseState extends State<PhoneAuthFirebase> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                widget.number,
+              widget.countryCode+  widget.number,
                 style: TextStyle(color: Colors.black87, fontFamily: "Ubuntu"),
               ),
               SizedBox(
@@ -160,7 +160,7 @@ class _PhoneAuthFirebaseState extends State<PhoneAuthFirebase> {
         _buttonState = false;
       });
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => UserStateAuthentication(),
+        builder: (context) => UserStateAuthentication(countryCode: widget.countryCode,number: widget.number,),
       ));
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -181,11 +181,11 @@ class _PhoneAuthFirebaseState extends State<PhoneAuthFirebase> {
       await FirebaseAuth.instance.signInWithCredential(phoneAuth);
       if (Platform.isIOS) {
         Navigator.of(context).pushReplacement(CupertinoPageRoute(
-          builder: (context) => UserStateAuthentication(),
+          builder: (context) => UserStateAuthentication(countryCode: widget.countryCode,number: widget.number,),
         ));
       } else if (Platform.isAndroid) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => UserStateAuthentication(),
+          builder: (context) => UserStateAuthentication(countryCode: widget.countryCode,number: widget.number,),
         ));
       }
     } on FirebaseAuthException catch (e) {

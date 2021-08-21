@@ -25,7 +25,7 @@ class _RegisterUiState extends State<RegisterUi> {
               child: Image.asset("images/register.png"),
             ),
             Text(
-              "#fitness is important for everyone",
+              "#Login to start your personal training.",
               style: TextStyle(fontSize: 20,fontFamily: "Ubuntu"),
             ),
             Text(
@@ -57,7 +57,7 @@ class _RegisterUiState extends State<RegisterUi> {
 
               color: Colors.black,
               onPressed: () async {
-            FirebaseServices service = new FirebaseServices();
+            FirebaseServices service = new FirebaseServices(context);
             service.signInUser(context);
               },
               child: Text("Continue with google"),
